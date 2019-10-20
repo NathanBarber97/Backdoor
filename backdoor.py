@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import base64
 from scapy.all import *
 from cryptography.fernet import Fernet

